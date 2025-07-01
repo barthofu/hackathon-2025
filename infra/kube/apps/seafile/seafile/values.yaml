@@ -1,0 +1,93 @@
+seafile:
+  defaultPodOptions:
+    securityContext:
+      fsGroup: 1000
+      fsGroupChangePolicy: "OnRootMismatch"
+
+  controllers:
+    main:
+      replicas: 1
+
+      containers:
+        main:
+          image:
+            repository: seafileltd/seafile-mc
+            tag: 12.0-latest
+          env:
+            USER_UID: 1000
+            USER_GID: 1000
+            TIME_ZONE: Europe/Paris
+          envFrom:
+            - secretRef:
+                name: seafile-secrets
+          securityContext:
+            runAsUser: 0
+            runAsGroup: 0
+
+        memcached:
+          image:
+            repository: memcached
+            tag: 1.6.18
+          command: ["memcached", "-m", "256"]
+
+        mariadb:
+          image:
+            repository: mariadb
+            tag: 10.11
+          env:
+            MYSQL_LOG_CONSOLE: true
+            MARIADB_AUTO_UPGRADE: 1
+          envFrom:
+            - secretRef:
+                name: seafile-secrets
+          securityContext:
+            runAsUser: 0
+            runAsGroup: 0
+
+  service:
+    main:
+      controller: main
+      type: ClusterIP
+      ports:
+        http:
+          port: 80
+
+  ingress:
+    main:
+      enabled: true
+      annotations:
+        kubernetes.io/ingress.class: traefik
+        cert-manager.io/cluster-issuer: letsencrypt-issuer
+      hosts:
+        - host: &host "files.estiam.bartho.dev"
+          paths:
+            - path: /
+              pathType: Prefix
+              service:
+                identifier: main
+                port: http
+      tls:
+        - secretName: seafile-tls
+          hosts:
+            - *host
+
+  persistence:
+    data:
+      type: persistentVolumeClaim
+      accessMode: ReadWriteOnce
+      size: 20Gi
+      advancedMounts:
+        main:
+          main:
+            - path: /shared
+    
+    db-data:
+      type: persistentVolumeClaim
+      accessMode: ReadWriteOnce
+      size: 20Gi
+      advancedMounts:
+        main:
+          mariadb:
+            - path: /var/lib/mysql
+
+
