@@ -23,8 +23,15 @@
           LOCALE_ARCHIVE = "${pkgs.glibcLocales}/lib/locale/locale-archive";
           ANSIBLE_VAULT_PASSWORD_FILE="${toString ./secrets/.vault_pass}";
 
-          shellHook =
-            "mkdir -p ~/.kube && cp -r ./secrets/.kube/cluster.kube.config ~/.kube/config";
+          shellHook = ''
+            mkdir -p ~/.kube && cp -r ./secrets/.kube/cluster.kube.config ~/.kube/config
+            if [ -f .env ]; then
+              set -a
+              . ./.env
+              set +a
+            fi
+            alias tf=terraform
+          '';
 
           packages = with pkgs; [
             # languages

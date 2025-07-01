@@ -1,0 +1,1 @@
+output "project_name" { value = "hackaton-2025" }
