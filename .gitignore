@@ -1,0 +1,30 @@
+# secrets
+.env
+*.env
+secrets/
+RepoCreds.yaml
+Secret.yaml
+
+# ide
+.vscode/
+.idea/
+
+# misc
+tmp/
+*.iso
+*.log
+*.tgz
+.direnv
+
+# kubernetes
+Chart.lock
+charts/
+
+# build
+build/
+bin/
+dist/
+
+# node
+node_modules/
+npm-debug.log
