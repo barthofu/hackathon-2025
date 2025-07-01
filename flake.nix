@@ -66,10 +66,12 @@
             git
             bmake
             jq
+            just
             lazygit
             d2
             coder
             zsh
+            sops
           ];
         };
       });

@@ -10,7 +10,7 @@ spec:
         repoURL: {{ $.Values.gitops.repo }}
         revision: {{ $.Values.gitops.revision }}
         directories:
-          - path: 'apps/kube/main/bootstrap/*'
+          - path: 'infra/kube/bootstrap/*'
   template:
     metadata:
       name: '{{ `{{path.basename}}` }}'

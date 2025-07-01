@@ -1,7 +1,6 @@
 gitops:
-  repo: ssh://git@github.com/barthofu/homelab.git
+  repo: https://github.com/barthofu/hackathon-2025.git
   revision: main
 stacks:
   - name: core
-  - name: services
   - name: apps

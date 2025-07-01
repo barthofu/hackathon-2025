@@ -1,19 +1,25 @@
 .POSIX:
 .PHONY: *
 
-default: namespace argocd root
+default: prepare bootstrap
 
-namespace:
-	kubectl create namespace argocd --dry-run=client --output=yaml \
-		| kubectl apply -f -
+prepare: traefik
+bootstrap: argocd infisical root 
+
+traefik:
+	cd traefik && ./apply.sh
 
 argocd:
+	kubectl create namespace argocd --dry-run=client --output=yaml \
+		| kubectl apply -f -
 	cd argocd && ./apply.sh
 
 root:
 	cd root && ./apply.sh
 
 infisical:
+	kubectl create namespace infisical --dry-run=client --output=yaml \
+		| kubectl apply -f -
 	cd infisical && ./apply.sh
 
 uninstall:

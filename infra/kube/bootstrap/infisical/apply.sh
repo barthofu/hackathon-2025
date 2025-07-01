@@ -1,11 +1,9 @@
 #!/bin/sh
 
-infisicalToken=$(cat ../../../../../secrets/infisical/kube-main.token)
-
 kubectl create secret generic service-token \
   --namespace=infisical \
   --type=Opaque \
-  --from-literal=infisicalToken="${infisicalToken}"
+  --from-literal=infisicalToken="${INFISICAL_TOKEN}"
 
 # helm template \
 #     --dependency-update \

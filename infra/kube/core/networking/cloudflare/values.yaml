@@ -1,7 +1,0 @@
-cloudflare-tunnel-ingress-controller:
-  cloudflare:
-    secretRef:
-      name: cloudflare-secrets
-      accountIDKey: ACCOUNT_ID
-      apiTokenKey: API_TOKEN
-      tunnelNameKey: TUNNEL_NAME

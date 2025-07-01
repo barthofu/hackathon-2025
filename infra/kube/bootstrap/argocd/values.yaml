@@ -1,6 +1,9 @@
 argo-cd:
   global:
-    # domain: argocd.home.bartho.dev
+    domain: argocd.estiam.bartho.dev
+    image:
+      repository: quay.io/argoproj/argocd
+      tag: v3.0.6
   configs:
     params:
       server.insecure: true
@@ -11,17 +14,17 @@ argo-cd:
         jsonPointers:
           - /status
   server:
-    # ingress:
-    #   enabled: true
-    #   annotations:
-    #     kubernetes.io/ingress.class: traefik
-    #     cert-manager.io/cluster-issuer: letsencrypt-issuer
-    #   hosts:
-    #     - &host argocd.home.bartho.dev
-    #   tls:
-    #     - secretName: argocd-tls
-    #       hosts:
-    #         - *host
+    ingress:
+      enabled: true
+      annotations:
+        kubernetes.io/ingress.class: traefik
+        cert-manager.io/cluster-issuer: letsencrypt-issuer
+      hosts:
+        - &host argocd.estiam.bartho.dev
+      tls:
+        - secretName: argocd-server-tls
+          hosts:
+            - *host
     service:
       type: NodePort
       nodePort: 30080
