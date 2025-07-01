@@ -1,0 +1,82 @@
+longhorn-volume-manager:
+  volumes:
+    - appName: lldap
+      volumeName: data
+      volumeSize: 1
+
+lldap:
+  defaultPodOptions:
+    securityContext:
+      fsGroup: 1000
+      fsGroupChangePolicy: "OnRootMismatch"
+
+  controllers:
+    main:
+      replicas: 1
+      containers:
+        main:
+          image:
+            repository: ghcr.io/lldap/lldap
+            tag: v0.6.1
+          env:
+            UID: 1000
+            GID: 1000
+            TZ: Europe/Paris
+            LLDAP_LDAP_BASE_DN: dc=home,dc=bartho,dc=dev
+          envFrom:
+            - secretRef:
+                name: lldap-secrets
+          securityContext:
+            runAsUser: 0
+            runAsGroup: 0
+          probes:
+            liveness:
+              enabled: true
+            readiness:
+              enabled: true
+          resources:
+            requests:
+              cpu: 5m
+              memory: 36M
+            limits:
+              memory: 128M
+
+  service:
+    ldap:
+      controller: main
+      type: ClusterIP
+      ports:
+        http:
+          port: 3890
+    webui:
+      controller: main
+      type: ClusterIP
+      ports:
+        http: 
+          port: 17170
+
+  ingress:
+    main:
+      enabled: true
+      annotations:
+        kubernetes.io/ingress.class: traefik
+        cert-manager.io/cluster-issuer: letsencrypt-issuer
+      hosts:
+        - host: &host "ldap.home.bartho.dev"
+          paths:
+            - path: /
+              pathType: Prefix
+              service:
+                identifier: webui
+                port: http
+      tls:
+        - secretName: lldap-tls
+          hosts:
+            - *host
+
+  persistence:
+    data:
+      existingClaim: pvc-lldap-lldap-data
+      globalMounts:
+        - path: /data
+

@@ -1,0 +1,39 @@
+# Backup S3 backend URL
+# backup:
+#   minioUrl: "https://s3.bartho.dev:9091"
+
+# Prometheus servicemonitor configuration
+# serviceMonitor:
+#   enable: true
+#   release: monitoring
+
+#####################
+# longhorn subchart
+#####################
+
+longhorn:
+
+  defaultSettings:
+    defaultDataPath: "/storage"
+    defaultReplicaCount: 2
+    orphanAutoDeletion: false
+    autoDeletePodWhenVolumeDetachedUnexpectedly: true
+    nodeDownPodDeletionPolicy: delete-both-statefulset-and-deployment-pod
+    nodeDrainPolicy: always-allow
+    backupTarget: "nfs://172.20.10.100:/backups/longhorn"
+
+  # Disable pre-upgrade checks job. It makes longhorn installation fails with ArgoCD
+  preUpgradeChecker:
+    jobEnabled: false
+
+  # Ingress Resource. Longhorn dashboard.
+  ingress:
+    enabled: true
+    host: longhorn.home.bartho.dev
+    tls: true
+    tlsSecret: longhorn-tls
+    path: /
+    annotations:
+      kubernetes.io/ingress.class: traefik
+      cert-manager.io/cluster-issuer: letsencrypt-issuer
+      cert-manager.io/common-name: longhorn.home.bartho.dev

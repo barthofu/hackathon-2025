@@ -1,0 +1,39 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: bootstrap
+  namespace: argocd
+spec:
+  generators:
+    - git:
+        repoURL: {{ $.Values.gitops.repo }}
+        revision: {{ $.Values.gitops.revision }}
+        directories:
+          - path: 'apps/kube/main/bootstrap/*'
+  template:
+    metadata:
+      name: '{{ `{{path.basename}}` }}'
+    spec:
+      destination:
+        name: in-cluster
+        namespace: argocd
+      project: default 
+      source:
+        repoURL: {{ $.Values.gitops.repo }}
+        targetRevision: {{ $.Values.gitops.revision }}
+        path: '{{ `{{path}}` }}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        retry:
+          limit: 10
+          backoff:
+            duration: 1m
+            factor: 2
+            maxDuration: 16m
+        syncOptions:
+          - CreateNamespace=true
+          - ApplyOutOfSyncOnly=true
+          - ServerSideApply=true

@@ -1,0 +1,11 @@
+apiVersion: v2
+name: pgadmin
+version: 0.0.0
+dependencies:
+  - alias: pgadmin
+    name: app-template
+    repository: https://bjw-s-labs.github.io/helm-charts
+    version: 3.2.1
+  - name: longhorn-volume-manager
+    repository: oci://registry-1.docker.io/barthodev
+    version: 0.1.20

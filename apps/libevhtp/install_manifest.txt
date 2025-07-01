@@ -1,0 +1,5 @@
+/usr/local/lib/libevhtp.a
+/usr/local/include/evhtp.h
+/usr/local/include/htparse.h
+/usr/local/include/evthr.h
+/usr/local/include/onigposix.h

@@ -1,0 +1,7 @@
+gitops:
+  repo: ssh://git@github.com/barthofu/homelab.git
+  revision: main
+stacks:
+  - name: core
+  - name: services
+  - name: apps

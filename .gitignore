@@ -15,13 +15,15 @@ tmp/
 *.log
 *.tgz
 .direnv
+thirdpartdir/
+*.tfstate*
 
 # kubernetes
 Chart.lock
 charts/
 
 # build
-build/
+# build/
 bin/
 dist/
 

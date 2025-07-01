@@ -1,0 +1,138 @@
+longhorn-volume-manager:
+  volumes:
+    - appName: prometheus
+      volumeName: storage
+      volumeSize: 10
+      volumeNumberOfReplicas: 1
+      ignorePVC: 'true'
+
+kube-prometheus-stack:
+  crds:
+    enabled: true
+
+  cleanPrometheusOperatorObjectNames: true
+
+  ###
+  ### Component values
+  ###
+  alertmanager:
+    enabled: false
+
+  kubeApiServer:
+    enabled: true
+    serviceMonitor:
+      metricRelabelings:
+        # Drop high cardinality labels
+        - action: drop
+          sourceLabels: ["__name__"]
+          regex: (apiserver|etcd|rest_client)_request(|_sli|_slo)_duration_seconds_bucket
+        - action: drop
+          sourceLabels: ["__name__"]
+          regex: (apiserver_response_sizes_bucket|apiserver_watch_events_sizes_bucket)
+
+  kubeControllerManager:
+    enabled: false
+
+  kubeEtcd:
+    enabled: false
+
+  kubelet:
+    enabled: true
+    serviceMonitor:
+      metricRelabelings:
+        # Drop high cardinality labels
+        - action: labeldrop
+          regex: (uid)
+        - action: labeldrop
+          regex: (id|name)
+        - action: drop
+          sourceLabels: ["__name__"]
+          regex: (rest_client_request_duration_seconds_bucket|rest_client_request_duration_seconds_sum|rest_client_request_duration_seconds_count)
+
+  kubeProxy:
+    enabled: false
+
+  kubeScheduler:
+    enabled: false
+
+  kubeStateMetrics:
+    enabled: false
+
+  nodeExporter:
+    enabled: false
+
+  grafana:
+    enabled: false
+    forceDeployDashboards: true
+    sidecar:
+      dashboards:
+        annotations:
+          grafana_folder: Kubernetes
+
+  ###
+  ### Prometheus operator values
+  ###
+  prometheusOperator:
+    replicas: 0
+    
+    nodeSelector:
+      kubernetes.io/hostname: "worker-2"
+
+    resources:
+      requests:
+        cpu: 35m
+        memory: 273M
+      limits:
+        memory: 326M
+
+    prometheusConfigReloader:
+      # resource config for prometheusConfigReloader
+      resources:
+        requests:
+          cpu: 5m
+          memory: 32M
+        limits:
+          memory: 32M
+
+  ###
+  ### Prometheus instance values
+  ###
+  prometheus:
+    ingress:
+      enabled: true
+      ingressClassName: traefik
+      annotations:
+        cert-manager.io/cluster-issuer: letsencrypt-issuer
+      hosts:
+        - &host prometheus.home.bartho.dev
+      pathType: Prefix
+      tls:
+        - secretName: kube-prometheus-stack-tls
+          hosts:
+            - *host
+
+    prometheusSpec:
+      replicas: 0
+      nodeSelector:
+        kubernetes.io/hostname: "worker-2"
+
+      ruleSelectorNilUsesHelmValues: false
+      serviceMonitorSelectorNilUsesHelmValues: false
+      podMonitorSelectorNilUsesHelmValues: false
+      probeSelectorNilUsesHelmValues: false
+      scrapeConfigSelectorNilUsesHelmValues: false
+      enableAdminAPI: true
+      walCompression: true
+      retentionSize: 8GB
+      
+      # https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/platform/storage.md#manual-storage-provisioning
+      storageSpec:
+        volumeClaimTemplate:
+          spec:
+            storageClassName: "longhorn-static"
+            selector:
+              matchLabels:
+                app.kubernetes.io/name: kube-prometheus-stack-prometheus-storage
+            resources:
+              requests:
+                storage: 10Gi

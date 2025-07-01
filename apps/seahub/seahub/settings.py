@@ -1258,3 +1258,5 @@ if ENABLE_LDAP:
 # settings.py
 
 
+
+SEAFILE_VERSION = "12.0.14"

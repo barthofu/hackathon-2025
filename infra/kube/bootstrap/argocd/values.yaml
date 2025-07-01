@@ -1,0 +1,41 @@
+argo-cd:
+  global:
+    # domain: argocd.home.bartho.dev
+  configs:
+    params:
+      server.insecure: true
+      controller.diff.server.side: true
+    cm:
+      resource.ignoreResourceUpdatesEnabled: true
+      resource.customizations.ignoreResourceUpdates.all: |
+        jsonPointers:
+          - /status
+  server:
+    # ingress:
+    #   enabled: true
+    #   annotations:
+    #     kubernetes.io/ingress.class: traefik
+    #     cert-manager.io/cluster-issuer: letsencrypt-issuer
+    #   hosts:
+    #     - &host argocd.home.bartho.dev
+    #   tls:
+    #     - secretName: argocd-tls
+    #       hosts:
+    #         - *host
+    service:
+      type: NodePort
+      nodePort: 30080
+    metrics: &metrics
+      enabled: true
+      serviceMonitor:
+        enabled: true
+    rbac:
+      disableApplicationFineGrainedRBACInheritance: false
+  dex:
+    enabled: false
+  controller:
+    metrics: *metrics
+  repoServer:
+    metrics: *metrics
+  redis:
+    metrics: *metrics
