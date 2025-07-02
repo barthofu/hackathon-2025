@@ -1,0 +1,38 @@
+name: Build Docker image
+
+on:
+  pull_request:
+  workflow_call:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get_tag.outputs.version }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Get latest git tag (with fallback)
+        id: get_tag
+        run: |
+          TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "12.0.14")
+          echo "version=$TAG" >> $GITHUB_OUTPUT
+
+      - name: Make build script executable
+        run: chmod +x infra/docker/build_and_dockerize.sh
+
+      - name: Build Docker image with custom script
+        run: infra/docker/build_and_dockerize.sh ${{ steps.get_tag.outputs.version }} pro
+
+      - name: Save Docker image as artifact
+        run: docker save estiam-files:${{ steps.get_tag.outputs.version }} -o image.tar
+
+      - name: Upload image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image
+          path: image.tar

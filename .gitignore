@@ -24,7 +24,6 @@ charts/
 
 # build
 # build/
-bin/
 dist/
 
 # node

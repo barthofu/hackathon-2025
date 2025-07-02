@@ -1,0 +1,41 @@
+name: Publish Docker image
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+
+  build:
+    uses: ./.github/workflows/build.yml
+
+  push:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Download image artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image
+
+      - name: Get latest git tag (with fallback)
+        id: get_tag
+        run: |
+          TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "12.0.14")
+          echo "version=$TAG" >> $GITHUB_OUTPUT
+
+      - name: Load Docker image
+        run: docker load -i image.tar
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Tag image for ghcr
+        run: docker tag estiam-files:${{ steps.get_tag.outputs.version }} ghcr.io/${{ github.repository_owner }}/estiam-files:${{ steps.get_tag.outputs.version }}
+
+      - name: Push Docker image
+        run: docker push ghcr.io/${{ github.repository_owner }}/estiam-files:${{ steps.get_tag.outputs.version }}
