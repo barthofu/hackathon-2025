@@ -1,0 +1,91 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+name: Full Security Scan (JS + Python + C)
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  js-security:
+    name: JS & Frontend Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name:  Install Node + deps
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name:  Install dependencies
+        run: |
+          npm ci || yarn install
+
+      - name:  Lint JS (ESLint)
+        run: |
+          npm install eslint
+          npx eslint .
+
+      - name:  Audit JS packages
+        run: |
+          npm audit --audit-level=high
+
+  python-security:
+    name:  Python Security
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name:  Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name:  Install tools
+        run: |
+          pip install flake8 bandit
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+
+      - name:  Python Lint
+        run: flake8 apps/seafdav seafevents
+
+      - name:  Python Security Scan (Bandit)
+        run: bandit -r apps/seafdav -ll
+
+      - name:  Trivy FS Scan (Python code)
+        run: trivy fs --scanners vuln,secret --exit-code 0 --severity HIGH,CRITICAL apps/seafdav || true
+
+  c-security:
+    name:  C Code Security
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name:  Install cppcheck
+        run: sudo apt-get update && sudo apt-get install -y cppcheck
+
+      - name:  Run Cppcheck
+        run: |
+          cppcheck apps/libevhtp apps/libsearpc --enable=all --inconclusive --error-exitcode=1
+
+  docker-scan:
+    name:  Docker Image Scan
+    runs-on: ubuntu-latest
+    needs: [python-security]
+    steps:
+      - uses: actions/checkout@v3
+
+      - name:  Install Trivy
+        run: |
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+
+      - name:  Build Docker Image
+        working-directory: infra/docker
+        run: docker build -t hackaton2025-app .
+
+      - name:  Scan Docker Image
+        run: trivy image --exit-code 0 --severity HIGH,CRITICAL hackaton2025-app || true
