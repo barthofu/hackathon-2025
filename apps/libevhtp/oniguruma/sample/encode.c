@@ -146,10 +146,10 @@ extern int main(int argc, char* argv[])
 	   "[ac]+", "bbbaAaCCC");
   r = exec(ONIG_ENCODING_ISO_8859_4, ONIG_OPTION_IGNORECASE,
 	   "[ac]+", "bbbaAaCCC");
-  r = exec(ONIG_ENCODING_ISO_8859_5, ONIG_OPTION_IGNORECASE,
-	   "[ac]+", "bbbaAaCCC");
+  exec(ONIG_ENCODING_ISO_8859_5, ONIG_OPTION_IGNORECASE,
+     "[ac]+", "bbbaAaCCC");
   r = exec(ONIG_ENCODING_ISO_8859_6, ONIG_OPTION_IGNORECASE,
-	   "[ac]+", "bbbaAaCCC");
+     "[ac]+", "bbbaAaCCC");
   r = exec(ONIG_ENCODING_ISO_8859_7, ONIG_OPTION_IGNORECASE,
 	   "[ac]+", "bbbaAaCCC");
   r = exec(ONIG_ENCODING_ISO_8859_8, ONIG_OPTION_IGNORECASE,
