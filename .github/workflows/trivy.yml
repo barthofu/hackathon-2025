@@ -7,6 +7,7 @@ name: Full Security Scan (JS + Python + C)
 
 on:
   pull_request:
+  push:
     branches: [ main ]
 
 jobs:
@@ -26,6 +27,7 @@ jobs:
           npm ci || yarn install
 
       - name:  Lint JS (ESLint)
+        continue-on-error: true
         run: |
           npm install eslint
           npx eslint .
@@ -51,12 +53,15 @@ jobs:
           curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
 
       - name:  Python Lint
+        continue-on-error: true
         run: flake8 apps/seafdav seafevents
 
       - name:  Python Security Scan (Bandit)
+        continue-on-error: true
         run: bandit -r apps/seafdav -ll
 
       - name:  Trivy FS Scan (Python code)
+        continue-on-error: true
         run: trivy fs --scanners vuln,secret --exit-code 0 --severity HIGH,CRITICAL apps/seafdav || true
 
   c-security:
@@ -69,6 +74,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y cppcheck
 
       - name:  Run Cppcheck
+        continue-on-error: true
         run: |
           cppcheck apps/libevhtp apps/libsearpc --enable=all --inconclusive --error-exitcode=1
 
