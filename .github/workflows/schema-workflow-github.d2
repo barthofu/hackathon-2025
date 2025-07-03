@@ -1,0 +1,17 @@
+workflow_github: "Workflow GitHub" {
+  "Développeur" -> "Commit & Push"
+  "Commit & Push" -> "GitHub Actions"
+  "GitHub Actions" -> "Build de l'image Docker"
+  "Build de l'image Docker" -> "Upload de l'artefact Docker"
+  "GitHub Actions" -> "Publication de l'image Docker"
+  "Upload de l'artefact Docker" -> "Publication de l'image Docker"
+  "Publication de l'image Docker" -> "Push de l'image sur GHCR"
+  "Publication de l'image Docker" -> "Mise à jour du manifest de déploiement (commit du tag d'image)"
+  "Mise à jour du manifest de déploiement (commit du tag d'image)" -> "Commit & Push"
+  "Mise à jour du manifest de déploiement (commit du tag d'image)" -> "ArgoCD surveille le repo"
+  "ArgoCD surveille le repo" -> "ArgoCD auto-sync"
+  "ArgoCD auto-sync" -> "Mise à jour Kubernetes (nouvelle image déployée)"
+
+  "GitHub Actions" -> "Scan de sécurité complet"
+  "Scan de sécurité complet" -> "Rapport dans la PR/commit"
+}
