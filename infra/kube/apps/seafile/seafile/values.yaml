@@ -58,8 +58,7 @@ seafile:
       annotations:
         kubernetes.io/ingress.class: traefik
         cert-manager.io/cluster-issuer: letsencrypt-issuer
-        # traefik.ingress.kubernetes.io/router.entrypoints: http,https
-        # traefik.ingress.kubernetes.io/redirect-entry-point: https
+        traefik.ingress.kubernetes.io/router.middlewares: seafile-secure-headers@kubernetescrd
       hosts:
         - host: &host "files.estiam.bartho.dev"
           paths:
